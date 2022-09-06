@@ -1,0 +1,1022 @@
+devops prerequisite 
+    definition: below are how devops is defined in different fields, all of them are correct 
+        - cloud engineer: infrastructure automation 
+        - tester: test automation 
+        - developer: ci/cd 
+    usecase 
+        - to ship new feature to prod faster
+    devops matrix: representation of devops as a whole created by sir mikael at devkinetics
+        agile adoption: integrate agile practices
+            software development lifecycle  
+                waterfall: straight forward development, next phase could only continue if previous phase is done 
+                    -> requirement 
+                    -> design 
+                    -> implementation 
+                    -> testing 
+                    -> maintenance  
+                agile: different features of the product are divided into multiple lifecycle  
+                    -> component1(e.g. login,dashboard,etc.) | perform sdlc(software development lifecycle) | each of this iteration are normally 2-4 weeks 
+                    -> component2 | perform sdlc 
+                    -> and so on... 
+                spiral: 
+                etc. 
+        developers experience: git gud devs
+            - increase defect detection rate while in a local environment; fix as many issues as possible before submitting the code to the central repository 
+            - empower developers by increasing their ability to do tasks locally that are normally done in a server environment 
+                - e.g. deploy app to a production-like environment and conduct a systems integration test 
+        continuous integration: the practice of automating the integration of code changes from multiple contributors into a single software project.
+            
+        continuous test: belong inside the continuous integration, this is not a separate process from ci 
+        continuous deployment/continuous delivery
+            continuous deployment: automatically deployed to production; fully automated from repo push to production release 
+            continuous delivery: someone decides when to deploy to production; fully automated from repo push until production release 
+        elastic infra: cloud infrastructure management tools like ec2, ecs/eks, etc.; must be iac(infra as code) at all time
+        continuous monitoring 
+        continuous compliance 
+        security 
+
+langauges 
+    json 
+        {
+            "key1": [
+                { "iKey1": "1" },
+                { "iKey2": "2" },
+                { "iKey3": "3" }
+            ]
+        }
+    yaml: superset of json 
+        key1: 
+            - iKey1: 1  # weird, it uses dash for array 
+              iKey2: 2 
+              iKey3: 3 
+
+devops tools 
+    linux 
+        filesystem 
+            bin: contains linux commands(cat,cp,cd,etc.) that we can use in linux 
+            boot: cotnains everything your os needs to boot 
+            dev 
+            etc: where configurations(apt) are stored  
+            home[the only directory you might wanna touch]: where you store your personal files, each user has its own directories 
+            lib 
+            lib64 
+            media 
+            mnt 
+            opt 
+            proc 
+            root 
+            run
+            sbin 
+            srv 
+            sys
+            tmp 
+            usr 
+            var 
+    docker: for containerization; container running in its own isolated environemnt where it contain its own os pretty much like a small machine in itself; a container contains the application including its runtime dependency all bundled
+        feature 
+            - isolated environment for your application, especially useful for when example a dependency in a library on your application had some updates, since your app is isolated the update won't affect your application 
+            - run the entire isolated application easily, especially useful for a microservice architecture since it is divided into multiple components(applications)
+        usecase 
+            - solves it works on my machine but not when moved into another computer; how? it containerized everything your app needs to run including its dependencies,config,networking,os,etc. so when it is moved into another machine it would run expectedly 
+            - easily install app like mysql and run it easily 
+        concepts 
+            containerization: all the components needed to run an application are bundled into a single container image including its dependencies, config, netowrking, etc.; pretty much everything you need to run a software application 
+                why? to solve the problem it works on my machine 
+            docker daemon: background service running on the host machine that manages the building,running, and distributing docker containers 
+            docker client: cli that allows you to issue build, run, and stop applications to a docker daemon 
+            docker swarm: container orchestration tool but kubernetes is the standard; manage a cluster of swarm docker daemon and all docker daemons itneract usign the docker api 
+                manager node: maintains cluster management tasks  
+                worker node: receives and execute tasks from the manager node 
+            docker desktop 
+            docker registries: where docker images are stored 
+            dockerfile: text file that contains instructions on how to build a docker image 
+            dockerhub: public repository of docker images 
+            images: contains the tools,libraries,and dependencies that the application code needs to run as a container 
+            containers: instance of an image; lightweight executable package of software that has everything you need to run an application - code, runtime, system tools, system libraries, and settings 
+            docker volume: to persist data on container because data is lost at default when you restart a container 
+                volume types at docker run 
+                    -v /{local_machine_filesystem}:/{container_filesystem} 
+                    -v {volume_name}:/{container_filesystem} | with this local machine filesystem is implicitly created 
+                    
+                     
+
+        diagram: https://docs.docker.com/engine/images/architecture.svg
+        flow 
+            end-to-end docker use (from containerization of application to running a container then deleting it)
+                -> create/download a docker image
+                    create 
+                        -> inside the dockerfile: (note that everything below is an example python app)
+                            # choose app language {language}:{version}
+                            FROM python:3.8 
+                            
+                            # 
+                            USER 
+
+                            # adding secret or environment variables needed for the application 
+                            ENV MONGO_DB_USERNAME=admin \ 
+                                MONGO_DB_PWD=password 
+                            
+                            # idk what these are 
+                            ADD main.py . 
+                            COPY 
+
+                            # execute commands, in this case install dependencies required for the application 
+                            RUN pip install requests beautifulsoup4 
+
+                            # used to start running the app 
+                            CMD [ "python", "./main.py" ]
+                        -> start building an image out of a dockerfile 
+                            docker build -t [image-name] .
+                    download existing image 
+                        -> docker pull [image-name] -- download an image from repo 
+                -> create container and start container from a docker image 
+                    - docker run [options] [image-name] -- create a container and starts it 
+                    - docker create + start 
+                        docker create [options] [image-name] -- create a container 
+                        docker start [options] -- start a container
+                -> enter cli of container 
+                    docker exec -it jenkins bash -- enter the cli of the container 
+                -> extra commands 
+                    docker images -- show all images 
+                    docker ps -a -- show all containers 
+                    docker volume ls -- list all docker volume 
+                -> pushing docker image to repository(dockerhub)
+                    docker push [image-name] -- upload an image to a repository
+                -> deleting containers or images
+                    docker stop -- stop container from running 
+                    docker container prune -- delete stopped containers
+                    docker image prune -a -- delete all unused images  
+    
+            quick cheatsheet - full fledge running a container (including: specifying image name, attaching volume, publishing port)
+                docker run --name jenkins -p 8080:8080 -p 50000:50000 -d -v jenkins_home:/var/jenkins_home jenkins/jenkins:lts
+                    - --name jenkins | container name 
+                    - -p 1234:8080 | publish(think of this as a way to access application from container to your host machine), {host_machine_port}:{container_port} for example the app in container like jenkins run in 8080, now what port do you want it to run on your machine, in this case it's 1234; this works by having your host machine port forward to container port 
+                    - -p 5000 5000 | additional publish; because some app like nginx or jenkins need to listen to multiple port 
+                    - -d | detached mode, run container in background 
+                    - -v jenkins_home:/var/jenkins_home | -v {volume_name}:/{container_filesystem}; volume, this is for data persistence in which you keep the data from container to your host machine 
+                    - jenkins/jenkins:lts | specify {image_name}:{tag} name where you will create a container/instance from 
+    kubernetes(k8): orchestrate docker containers; since container is an instance of a docker image which represents an application just think of kubernetes as a way to manage the entire application with a microservice architecture(microservice has a feature/component that is its own application); it orchestrate containers in a way that it makes the container high availability, fault tolerant, easily scalable, and flexible 
+        feature 
+            - high availability or no downtime 
+            - scalability of containers 
+            - disaster recovery: backup and restore 
+        usecase         
+        concepts 
+            container orchestration: for orchestrating containers, wdym by orchestration? easily run,suspend,shut multiple containers or control how they access resources or auto replication of servers when traffic is higher  
+                why? bruh for easy management, automating, and scaling containerized applications 
+            manifest: this the yaml file, e.g. deployment manifest file, statefulset manifest file, etc. 
+                main components 
+                    apiVersion - different object has different apiVersion so you google this one 
+                    kind - what type of object you want to create 
+                    metadata - data that uniquely identify the object 
+                        name - name of object 
+                        labels - intended to be used to specify identifying attributes of objects, e.g. "release": "stable", "environment" : "dev" 
+                    spec - attributes differ to every different object, e.g. deployment has replicas, selector, etc. while service has selector, ports, etc. 
+                blueprint for manifest files: https://www.kisphp.com/kubernetes-manifests 
+                example for creating pods 
+                    apiVersion: v1 
+                    kind: Pod 
+                    metadata: 
+                        name: nginx-pod 
+                    spec: 
+                        containers: 
+                            - image: nginx 
+                              name: nginx-demoapp
+                              ports: 
+                                - containerPort: 80 
+            objects: define state of the cluster; think of it as ordering what you want in a waiter while youre in a restaurant 
+            resources: endpoint in the kubernetes api that stores a collection of api object; think of it like a menu
+            controller: pretty much like a thermostat that adjusts based on your desired state; are control loops that watch the state of your pod, then amke or request changes where needed; 
+            cluster: contains node/s  
+            namespace: partition a single k8 cluster into multiple virtual clusters 
+            nodes: contains multiple pod/s; machine either virtual or physical machine; ach node is managed by the control plane; 
+            workloads
+                pods: contains docker container/s; most k8 users do not create pods directly instead they create a deployment, cronjob, statefulset, or other controller which manages the pods for them
+                deployments: matches the current state of your cluster to the desired state mentioned in the deployment manifest; yaml file that tells k8 how to create or modify instances of the pods
+                replicasets: k8 object that ensures there is always a stable set of running pods 
+                daemonsets: ensures that all eligible nodes run a copy of a pod 
+                statefulsets: k8 object to manage stateful applications(databases), manages the deployment and scaling of a set of pods  
+                jobs: higher level abstraction that uses pods to run a completable task 
+                cronjobs: create jobs on a repeating schedule 
+            config
+                configmaps: plain text data, e.g. DB_URL = mongo-db 
+                secrets: encrypted data to store secrets bruh
+                resource quotas: to restrict cluster tenant's resource usage per namespace 
+                limit ranges: to constrain resource allocations to pods or containers in a namespace 
+                hpa(horizontal pod autoscaling): automatic scaling of the workload(deployment, statefulset) to match demand 
+                pod disruption budgets: limit disruption to your application when its pods need to be upgraded/routine maintenance work/etc. on the kubernetes nodes 
+                priority classes 
+            network
+                services: assigned to pod/s; enables a group of pods to be assigned a name and unique ip address; provide discovery and routing between pods 
+                endpoints: resource that gets ip addresses of one or more pods
+                ingress: assigned to service; to provide a web address/link/url to a service; to use ingress you need some web server as ingress controller, nginx is a good choice 
+                network policies: control traffic between pods and/or network endpoints 
+                port forwarding: allows pod to select a matching pod to port forward to; 
+            storage 
+                persistent volume claims: allows pods to access persistent storage
+                persistent volumes: piece of storage in a cluster than an administrator has provisioned; useful when you need to store data within kubernetes 
+                storage classes 
+            events: pretty much the logging area in k8 where you can see what's happening 
+            helm 
+                helm charts 
+                releases
+            role based access control 
+                service accounts cluster roles 
+                roles: define the actions a user can perform within a cluster or namespace 
+                cluster role bindings 
+                role bindings: grants the permissions defined in a role to a user or set of users 
+                pod security policies 
+            custom resources 
+        diagram: https://www.linkedin.com/pulse/namespaces-deployments-kubernetes-asif-habib
+        architecture
+            n master nodes(each master nodes contains below): requires less resources (ram,storage,cpu)
+                -> api server
+                -> scheduler
+                -> controller manager
+                -> etcd 
+            n worker nodes(each master nodes contains below): requires more resources (ram,storage,cpu)
+                -> multiple pods with container/s for each 
+                -> container runtime 
+                -> kubelet 
+                -> kube proxy
+        
+        flow 
+            -> cluster setup
+                minikube: for test/local setup  
+                    -> install hypervisor(virtualbox vm), becuz you know minikube runs in a virtual box 
+                    -> install minikube 
+                    -> starting a cluster 
+                        minikube start --vm-driver=hyperkit 
+                aws eks(easier): for production
+                    -> devkinetics eks 
+                        aws eks update-kubeconfig --region us-east-1 --name devopsx-eks 
+                    
+                    -> launch an ec2 instance(linux-ubuntu os): this instance is the bootstrap for your kubernetes 
+                        -> install awscli: awscli is to interact to aws resources using cli bruh 
+                            sudo apt-get update
+                            sudo apt-get install awscli
+
+                            aws --version
+                        -> install kubectl: kubectl is used to run kubernetes commands 
+                            snap install kubectl --classic
+                            kubectl version --client
+                        -> install eksctl: eksctl is used for creating and managing clusters on aws eks 
+                            curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+                            sudo mv /tmp/eksctl /usr/local/bin
+                            eksctl version
+                        -> create an iam role and attach it to ec2 instance: iam role is the set of permissions the ec2 instance can do at our aws account; think of it as a set of permission you assign to an aws resource
+                            -> choose ec2 
+                            -> permissions: iamfullaccess, ec2fullaccess, cloudformationfullaccess, administratoraccess(not recommended but we want this done fast so yeah lmao, but in enterprise use this: https://eksctl.io/usage/minimum-iam-policies/)
+                            -> attach new iam role to ec2 
+                            - with this you can now create eks cluster for your aws account on your ec2 instance 
+                        -> setup kubernetes in eks | create your cluster and nodes 
+                            eksctl create cluster \
+                            --name [clustername] \
+                            --region [us-east-1/...] \
+                            --node-type [t2.micro/...] \
+                            --nodes-min 2 \
+                            --nodes.max 2 \ 
+                            --zones [us-east-1a/...]
+
+                            example 
+                                eksctl create cluster --name=dk --region=us-east-1 --zones=us-east-1a,us-east-1b --node-type=t2.micro
+                        -> to delete the eks cluster 
+                        -> validate your cluster by checking nodes and by creating a pod 
+                setup your own(harder): for production 
+            -> end-to-end cluster interaction 
+                -> component overview 
+                    kubectl -n [namespace-name] get nodes -- similar to step below but choose specific namespace 
+                    kubectl get nodes -- get status of nodes 
+                    kubectl get pod -- get status of pod
+                    kubectl get services -- get status of services 
+                    kubectl get replicaset -- get status of replicaset
+                    kubectl get deployment -- get status of deployment
+                -> debugging pods 
+                    kubectl logs [pod-name] -- view container logs
+                    kubectl describe [pod-name] -- show changes happening in the pod 
+                    kubectl exec -it [pod-name] --bin/bash -- execute a command in a running container
+                -> all about namespace 
+                    attach namespace to a component(deployment,service,secret,etc.)
+                        kubectl apply -f [yaml-file-of-component] --namespace=my-namespace
+                    only a specific namespace is allowed 
+                        -> install kubens 
+                        -> kubens [namespace-name]
+                -> crud commands (create,edit,delete deployment(abstraction over pods meaning in kbuernetes you don't work directly with pods but instead in a deployment))
+                    kubectl create deployment nginx-depl --image=nginx -- create deployment or think of it as a blueprint for creating pods; everytime you do this a replicaset is already created then this replicaset is the one who automatically manages the replica/copy of the pod but you could also specify how many replicaset you want ... 
+                    kubectl create deployment [deployment-name] --image=[image-name]
+
+                    kubectl edit deployment [deployment-name] -- edit deployment 
+
+                    kubectl delete deployment [deployment-name] -- delete along with its configuraiton file 
+                -> create/modify configuration file for auto creation of deployment/secret/services/etc.
+                    kubectl apply -f [yaml-file] -- create new one if it doesnt exist yet 
+                    code [yaml-file] -- edit content of yaml file 
+                    kubectl apply -f [yaml-file] -- since there is already one create this just updates 
+    terraform: infrastructure provisioning; automate the built of infrastructure pretty much like vagrant 
+        feature 
+        usecase
+        concepts 
+            state: iac file representation 
+            planning & applying 
+                plan: whats going to happen if you execute the iac 
+                apply: execute the plan  
+            hcl: langauge for creating the iac in terraform; .tf extension 
+                variable 
+                    // think of this in java as `string myvariable = "welcome to terraform"`
+                    variable "myvariable" {
+                        type = string 
+                        default = "welcome to terraform"
+                    }
+
+                    // calling the variable in terraform console - var.myvariable 
+                array(or list as they call it in hcl)
+                    variable "mylist" {
+                        type = list 
+                        default = ["abc", "def", "xyz"]
+                    }
+
+                    // calling value in list using index - var.mylist[0]
+                dictionary(or map as they call it in hcl)
+                    variable "mapvariable" {
+                        type = map(string)
+                        default = {
+                            new_key = "new_value"
+                        }
+                    }
+
+                    // calling the key of the variable in terraform console - var.mapvariable["new_key"]
+                provider and resource: think of it as a way to connect to similar to aws and its services 
+                    provider: think of it as a way to connect to aws 
+                        access_key = "ACCESS_KEY"
+                        secret_key = "SECRET_KEY"
+                        region = "us-east-1"
+                    resource: what aws service/resource you'll be using 
+                        resource "aws_instance" "example" {
+                            ami = "ami-2756g656"
+                            instance_type = "t2.micro"
+                        }
+            dependency resolution 
+            folder structure 
+            syntax 
+                concepts 
+                    meta arguments: parameter (kv) you could enter in any part of terraform(service,providers,etc.); e.g. depends_on, etc. 
+                code blocks 
+                    provider: 3rd party service like aws, azure, etc. 
+                    resource: basically any move you make for let's say in aws, e.g. create ec2 resource, attach elastic ip to network interface, etc. 
+                    variable: think of variable in tf as config file; can be used to anywhere on your terraform file
+                        optional parameters 
+                            description: bruh 
+                            default: default value; if no assigned values there are multiple ways to assign a value (thru prompt, thru cli when calling terraform apply, thru .tfvars )
+                            type: datatype 
+                    output: print to terminal when you run terraform 
+                    terraform: provide versioning for provider or terraform 
+                    data: idk what this is 
+        diagram: https://static.packt-cdn.com/products/9781800565975/graphics/image/Figure_1.12_B16919.jpg
+            providers: connection between terraform and a 3rd party like aws
+                - e.g. you want to launch iac in aws then you say your provider is aws 
+            provisioners 
+            plugin 
+            client library 
+            upstream api 
+        flow 
+            end-to-end cloud infrastructure automation on aws 
+                -> installation of jenkins 
+                    kubernetes(thru helm):
+                -> creation of terraform file (specify provider/s and resource/s you need); note that code does not need to be sequential in terraform 
+                -> terraform command; end-to-end (init-)
+                    terraform init -- only use when terraform file has provider and resource needed; this automatically install plugins 
+                    terraform fmt -- auto fix stylings of the code 
+                    terraform apply  -- run the code (start building the infrastructure); updates the infra
+                        terraform apply -target {resource-name} -- run only a specific resource
+                        terraform apply -var "var_name=10" -- set a value for variable if you do not want to get prompt instead 
+                    terraform plan -- print changes on the existing resources you made 
+                    terraform destroy -- delete all the resources your terraform file created 
+                        terraform destroy -target {resource-name} -- delete only a specific resource 
+                    terraform refresh -- 
+                    terraform state    
+                        terraform state list -- show all of the resources you have created 
+                        terraform state show {resource-name} -- show details regarding the resource 
+                        terraform output -- explicitly call the output of your terraform file, atlho not necessary since its already being done when you run once your terraform file 
+    ansible: configuration management that does the desired state instead of bash script which does the action you only said 
+        understanding ansible deeper 
+            A bash script does an action. That could be copying a file, or installing a package, or modifying permissions, etc. What happens if you re-run the script? You might get an error if the system is already in the desired state. I suppose you could put a lot of error checking in to make sure you don't have unintended consequences on running it again. And you could have it report on if it had to make the change vs. if the change has already been done and the system is in the state you wanted it to be. Except at that point, you've now written your own version of Ansible.
+
+            The way I often explain the difference is this:
+
+            Bash (or another scripting language) describes actions. Do this thing. Now do this other thing.
+
+            Ansible (and other configuration management systems) describe the desired state. This file should exist here, owned by this user, with these permissions. This package should be installed. This line in this config file should appear like this.
+
+            By describing the desired state of things it lets you get away from worrying about how to make that happen and focus on what needs to happen. For example, if I need file A to be in location B, I can just say "file A should be at B". I don't have to write the code to check if the file already exists at B, and if not then copy from A to B, but if it did exist to check if the file at B matches A and if not do the copy anyway. I can just say "file A should be at B".
+
+            Another benefit of Ansible is you get a listing of what is already in the desired state and what changed. You can re-run it periodically to prevent configuration drift, and see what changed. Did some coworker edit a config file to test something and forgot to change it back? Configuration management would catch that and put it back the way it should be. Did you re-run it and got 100% OKs and no changes? Enjoy that warm fuzzy because now you KNOW your environment is how you want it to be.
+
+            Having said all that, if you only need something to perform an action once, or infrequently, but it's too complex/annoying/tedious to type out on the command line, perhaps a bash script might be the best solution.
+        feature 
+            - configuration/installation/deployment steps in a single yaml file 
+            - re-use same file multiple times and for different environments 
+            - automatic deployment: applications are deployed automatically on a variety of environments 
+        usecase
+        concepts 
+            configuration management: consistency of all systems in the infrastructure is maintained; ensures that the system performs as expected even though changes are made over time  
+            playbooks: single yaml file; script containing the automation tasks, their order, and behavior 
+            play/task - an action to be performed, e.g. execute a command, run a script 
+            inventory: defines the hosts and gorups of hosts upon which commands, modules, and tasks in a playbook operate
+            modules: task in the playbook 
+                tasks: 
+                    - name: module1 | here we use the module command 
+                      command: date 
+                    - name: module2 | here we use the module command again
+                      command: date 
+            conditional: execute the task/module when condition is met 
+                when: item.required == True 
+            variables: bruh 
+                three ways to declare var 
+                    inside playbook 
+                        vars: 
+                            letsgo: 10.1.250.10
+                    inside inventory 
+                        Web1 ansible_host=server1.company.com
+                    in its own variable file(e.g. variables.yaml)
+                        variable1: value1 
+                        variable2: value2 
+                calling a variable 
+                    port: '{{ sample_var }}'
+            loop: execute a task multiple number of times, bruh 
+                one item loop 
+                    tasks: 
+                        - user: name='{{ item }} state=present 
+                        loop: 
+                            - joe 
+                            - george 
+                            - ravi 
+                    
+                    // think of above as the same thing below 
+                    tasks: 
+                        - var: item=joe 
+                        user: name= '{{ item }} state=present 
+                        - var: item=george
+                        user: name= '{{ item }} state=present - var
+                        - var: item=ravi
+                        user: name= '{{ item }} state=present 
+                n item loop
+                    tasks: 
+                        - user: name='{{ item.name }} state=present uid='{{ item.uid }}'
+                        loop: 
+                            - name:joe 
+                              uid: 1010
+                            - george 
+                              uid: 1011
+                            - ravi 
+                              uid: 1012
+                        
+                    // think of above as the same thing below 
+                    tasks: 
+                        - var: 
+                            item:
+                                name: joe 
+                                uid: 1010
+                        user: name= '{{ item }} state=present uid='{{ item.uid }}'
+                        - var: 
+                            item:
+                                name: george
+                                uid: 1011
+                        user: name= '{{ item }} state=present uid='{{ item.uid }}'
+                        - var: 
+                            item:
+                                name: ravi 
+                                uid: 1012
+                        user: name= '{{ item }} state=present uid='{{ item.uid }}'
+                using with_* (not much difference with normal loop but is more fit for specific cases           
+            role: 
+            collections: standardized way to organize and package ansible content; can contain playbooks,modules,roles,docs,tests,plugins all bundled in a single yaml file 
+            ansible galaxy/ansible automation hub: to get ansible collections 
+            preparing windows server 
+            patterns 
+            ddynamic inventory 
+            developing custom modules 
+        diagram
+        flow 
+            -> create inventory 
+            -> create variable 
+            -> create playbook 
+                -> create module 
+    helm: package manager for kubernetes similar to npm,homebrew; install packages(set of yaml files required to run in a kubernetes environment) 
+        feature 
+            - package manager for kubernetes; think of it as homebrew/apt for kubernetes; think of it as a way to install and uninstall software packages 
+            - to package yaml files and distrubte them in public/private repositories      
+        usecase
+            - get configuration from other people; example is you need a deployment for mysql you can search it in helmhub
+            - create your own helm chart(set of config files, when i say config i also mean yaml files), typically useful when you have same applications across diff environments (dev,staging,prod)
+        concepts 
+            namespace: 
+            helm charts: think of this as kubernetes cluster bundled into one; bundle of yaml files; set of kubernetes yaml packaged together for easy manipulation; charts are displayed in directory trees and packaged into helm chart repositories 
+                directory structure 
+                    mychart/ -- name of chart 
+                        chart.yaml -- meta info about chart 
+                        values.yaml -- values for the template files 
+                        charts/ -- chart dependencies 
+                        templates folder -- actual template files 
+            helm chart repositories: remote servers containing a colleciton of kubernetes resource files
+            helm chart plugin: 
+            helmfile: manage your helmchart 
+            helm hub: repo of public helm charts 
+            release: single instance of a chart deployed in a kubernetes cluster 
+            templating engine: templaye yaml config file for different microservice
+                - define a common blueprint for different microservice using a single yaml file; useful when differnet microservice only differs in a few lines of code in yaml 
+                - you can insert values in the template when doing helm install just google it up 
+                    e.g. helm install --values=my-values.yaml <chartname>
+            release management: keeping track of all chart executions like installign chart, etc. 
+        diagram: https://miro.medium.com/max/361/1*UmytyuBv5V5-vqJ7g8nmUg.png
+        flow 
+            repository flow (you need to add helm repo first before you can install charts from it or in other words u need this before you can perform helm install)
+                helm repo add [repository-name] [url] // add repo from internet; you need to add repo first before you can install from it 
+                helm repo list // list chart repo, empty if u still haven't add anything 
+                helm search repo [keyword] // search repo for a keyword 
+                helm repo remove [repository-name] // remove repo from your system 
+                helm repo update // update repo 
+            end-to-end usage flow (install-uninstall helm chart)
+                helm list // list all available release in the current namespace 
+                helm install [app-name] [chart] // install release, automatically start the kubernetes cluster 
+                helm status [release] // get status of release 
+                helm upgrade [release] [chart] --version [version-number] // release upgrade to a specific version
+                helm rollback [release] [revision] // release rollback(go back to previous version)
+                helm get all [release] // get all release information 
+                helm history [release] // get history of release 
+                helm uninstall [release] // uninstall a release 
+    jenkins: automates ci process 
+        feature 
+        usecase
+            - automating set of tasks, in our case as a devops automating the cicd pipeline 
+        concepts 
+            job/project: task that a user defines; can have a trigger that determines when it runs; example is fetch source code from version control or compile the code or run unit tests, etc. 
+                freestyle: orchestrate simple jobs for a project 
+                pipeline: define the whole application lifecycle; useful for cicd 
+                multibranch pipeline: implement different jenkinsfiles for different branches of the project, meaning for example master,feature branch gets their own jenkinsfile or cicd pipeline
+                multi-configuration project
+                folder 
+                organization folder 
+            executor: allow a build to run on an agent 
+            agent: a machine whether a vm machine or a container; where the job would execute 
+            view: organize jobs and content into tabbed categories 
+            build triggers: build the jenkins job automatically
+                git web hook: trigger job if there are new commits in repo 
+                poll scm(source code): trigger job periodically but only if there are changes in the source code
+                build periodically: trigger job periodically even without changes in source code
+                trigger builds remotely: trigger job from anywhere wether it be from a script, from an ansible playbook, etc. 
+                build after other projects are built: trigger job automatically after a specified job is done 
+            build: each run of the job is called a build 
+            shared libraries: instead of putting the entire pipeline ina single jenkinsfile, divide it into multiple libraries which can just be easily called in the jenkinsfile  
+                directory structure 
+                    vars: holds all the global shared library code; contains module/pipeline files, ends with .groovy extension 
+                    src: regular java source directory which will be using the pipeline 
+                    resource: all the non-groovy files required for your pipeline 
+            groovy: for scripted pipeline or pipeline as a code; can use diferent programming languages  
+                basics 
+                    class GroovyTut {
+                        static void main(String[] args){
+                            // variable 
+                            def age = "Dog"; 
+                            age = 40;
+
+                            // input
+
+                            // output/print
+                            println("Hello World");
+                        }
+                    }
+                function 
+                loop 
+                class 
+                    sample class
+                    constructor 
+                    inheritance 
+                    others 
+                conditionals 
+                    if else 
+                    switch 
+                    ternary
+                others/keywords
+            jenkinsfile: pipeline as a code 
+                file naming
+                    pipeline{name}.groovy - step in a ci/cd pipeline, typically uses jenkinsfile syntax 
+                    module{name}.groovy - libraries used in a pipeline, typically uses java alike groovy syntax 
+                basic structure (declarative way; scripted way is weird)
+                    // this to make the importedScript var from init stage be available to all stages 
+                    def importedScript 
+
+                    // define your own variable that can be used inside the pipeline, for default variable just google it up 
+                    CODE_CHANGES = getGitChanges()
+                    
+                    // define the flow 
+                    pipeline {
+                        // where to execute, for example "agent { kubernetes { }}" means execute the pipeline inside a pod deployed on a kubernetes cluster 
+                        agent any 
+
+                        // access build tools 
+                        tools {
+                            maven 'Maven'
+                        }
+
+                        // to allow build with parameters, in this case we can choose version when we start building 
+                        parameters {
+                            // types of param 
+                            string(name: 'VERSION', defaultValue: '', description: 'version to deploy on prod')
+                            choice(name: 'VERSION', choices: ['1.1.0', '1.2.0', '1.3.0'], description: '')
+                            booleanParam(name: 'executeTests', defaultValue: true, )
+                        }
+
+                        // creating env variable - as per my udnerstanding env var is a way to create variables in jenkins which you can use in stages, you could also create this in stage block; 
+                        environment {
+                            NEW_VERSION: '1.3.0'
+                            SERVER_CREDENTIALS = credentials('') // using built in function to assign to your var 
+                        }
+
+                        // tasks or flow for this pipeline 
+                        stages {
+                            
+                            stage("init"){
+                                echo 'initializing the application...'
+                            }
+
+                            stage("build"){
+                                // task inside the stage 
+                                steps {
+                                    // shell script 
+                                    echo 'building the application...'
+
+                                    // call step/plugins/libraries - refer to https://www.jenkins.io/doc/pipeline/steps/
+                                        container() {
+
+                                        }
+
+                                        // [jenkinsfile] load groovy script - only for jenkinsfile not shared libraries 
+                                        script {
+                                            importedScript = load "script.groovy"
+                                        }
+
+                                        // [shared libraries] load groovy script, no need to do the above to call a function for a shared libraries 
+                                        moduleName()
+                                }
+                            }
+
+                            stage("test"){
+                                // conditionals - steps would only execute if expression is true
+                                when {
+                                    expression {
+                                        env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'master'
+                                    }
+                                }
+
+                                steps {
+                                    echo 'testing the application...'
+                                }
+                            }
+
+                            stage("deploy"){
+                                steps {
+                                    echo 'deploying the application...'
+                                }
+                            }
+                        }
+
+                        // execute some logic after all stages is done, somehow like a try catch block 
+                        post {
+                            // will always execute even if failed 
+                            always {
+
+                            }
+
+                            // will execute when success 
+                            success {
+
+                            }
+
+                            // will execute on failure 
+                            failure {
+
+                            }
+                        }
+                    }
+                    // additional note: to add credentials in stage just youtube it dude 
+            plugins: for enhancing functionality of jenkins environment(jobs)
+                best plugins for devops (debatable)
+                    jira: helps with tracking bugs, issues, and overall project management 
+                    github/gitlab: automates code review 
+                    performance plugin: integrate with different report capturing platforms 
+                    build pipeline: pass through all the steps in a pipeline for testing and can be triggered either through a manual process or automated 
+                    jobs dsl: create templates that you can use on similar jobs 
+            security on jenkins 
+                authorization: how a user/group can access jenkins/project  
+                    matrix based security(recommended): easy, and intuitive way to assign what a user/group can access in jenkins 
+                    project based matrix authorization strategy: pretty much like matrix based security but dedicated to what a user/group can access in a project(note that project is a jenkins job)
+                    role based authorization strategy(plugin): create role(permissions) and assign them to a user/group 
+        technique for developing jenkins pipeline 
+            -> develop pipeline with jenkins shared library, basically the jenkinsfile exists just to call the shared library 
+            -> use vscode, install jenkins pipeline linter connector: this checks if you have syntax errors in pipeline 
+            -> do testing(jenkins pipeline unit/jenkins test harness/jenkinsfile runner) for the pipeline code: with this you can test the functionality of the pipeline before you push it to repo 
+            -> use options timeout at the stage level: with this you can force stop a stage after certain amount of time incase it's taking very long without breaking the pipeline 
+                -> use this especially when you have an input in step so you can skip that stage incase the input is very long 
+            -> in a stage do not put an input that has an agent within, idk why i just found it on cloudbees but still, don't do it!!!
+        diagram/architecture: https://www.tutorialandexample.com/wp-content/uploads/2020/10/Jenkins-Distributed-Architecture-1.png
+            master node(controller): schedule the jobs, assign slaves, and send builds to slaves to execute the jobs 
+            slave node: execute the job 
+            node: computer machine(think of ec2 instance), can be a master or slave 
+        flow 
+            end-to-end creation of jenkins pipeline 
+                -> installation of jenkins 
+                    kubernetes(thru helm):
+                -> creating job(pipeline method)
+                -> general
+                    discard old builds: determine if discard record builds
+                    do not allow concurrent build: determine if two or more task/stage is allowed to be happening at the same time, example image: https://www.lars-berning.de/wp-content/uploads/2017/07/devops_pipeline.png
+                    do not allow the pipeline to resume if the controller restarts 
+                    github project: link to gh project  
+                    pipeline speed/durability override 
+                    preserve stashes from completed builds 
+                    this project is parameterized 
+                    throttle builds 
+                -> build triggers 
+                    build after other projects are built 
+                    build periodically 
+                    github hook trigger for gitscm polling 
+                    poll scm 
+                    disable this project 
+                    quiet period 
+                    trigger builds remotely (e.g. from scripts)
+                -> advanced project options 
+                    display name 
+                -> pipeline 
+                    use groovy sandbox: 
+    gitlab: pretty much similar with github but has ci/cd and devops workflow built-in unlike in github where you integrate them yourself 
+    sonarqube: for code quality and code security 
+        feature 
+        usecase
+            - for code quality and code security of java applications 
+        concepts 
+            quality gate: switch that turn off from green to red when we get a problem in our code 
+
+        diagram/architecture 
+            analyzer: analyze the source code to compute snapshots 
+            database: stores configurations and snapshots 
+            server: web interface that is used to browse snapshot data and make configuration changes 
+        flow 
+    prometheus: collect metrics; for monitoring http endpoints/apis, can be used to monitor microservice, kubernetes, your app's api endpoints, etc.; stored time-series data
+        monitoring 
+            client libraries
+            counter metric: value that only goes up (e.g. visits to a website)
+            gauge metric: single numeric value that can go up and down (e.g. cpu load, temperature)
+            histogram metric:  samples oversavtions (e.g. capture the latency of the http request/request durations or response sizes)
+            summary metric: samples observation (e.g. request durations, and reponse sizes)
+            pushing metrics: this is how prometheus collect metrics 
+            - app -> push gateway <- prometheus pulls metrics 
+            - stored in push gateway are always there unless they are deleted via the api  
+            querying: query metrics in prometheus with promql 
+            service discovery 
+            exporters: used to monitor third party apps like mongodb,mysql,etc. (e.g. mysql server exporter, system metrics exporter, consul exporter, etc.)
+            - app -> exporter <- prometheus pull metrics
+        alerting 
+            prometheus server 
+            alert rules: contains the trigger for the alert 
+            alert manager: sends the alert to different receivers (e.g. slack, email, etc.)
+        internals
+            storage: how data is stored in prometheus  
+            local storage: local time series data
+                wal (write-ahead-log): to persist data in local storage because apparently local storage store the most recent data in memory 
+            remote storage: focused for long term storage 
+            security: prometheus doesnt offer any support for authentication or encryption (tls) buy you can still enable it using a reverse proxy 
+    grafana: used to visualize the metrics created by grafana 
+    loki: collect logs; for visualizing and querying logs 
+    istio: for service mesh; manage(traffic management, which service can talk to who) communication between microservices
+        concepts 
+            service mesh: think of it as the whole k8s cluster 
+            control plane: manages all of the sidecar proxy inside your pods in k8s
+            istiod: daemon 
+                citadel: manage certificate generation  
+                pilot: help with service discovery 
+                galley: help in validating config file 
+            sidecar proxy: for better and easier communication between each service in a microservice; contains all of the non-business logic inside the k8s pod like security, etc. 
+            envoy: other term for the sidecar proxy; stored inside the k8s pod  
+            istio agent: used for passing configs value to envoy proxies, each envoy has its own istio agent 
+            traffic management 
+            gateway: load balancer operating at the edge of the mesh(k8s cluster) receiving incoming or outgoing http/tcp connections 
+                ingress gateway: traffic going inside k8s cluster | used as istio-ingress gateway (controller) in k8s
+                egress gateway: traffic going outside k8s cluster | used as istio-egress gateway (controller) in k8s  
+            virtual service: 
+            routing rules 
+            destination rules 
+            service entry 
+            sidecar 
+            network resiliency
+                timeout 
+                retries 
+                circuit break 
+                fault injection 
+            observability 
+            telemetry: istio generates detailed telemetry for all service communications with a mesh, telemetry provides observability of service behavior
+                metrics 
+                distributed traces 
+                access logs 
+            security 
+            authentication
+                mutual tls 
+                authentication policies  
+            authorization
+                implicit enablement 
+                authorization policies
+        architecture: https://phoenixnap.com/kb/wp-content/uploads/2021/04/istio-architecture.png
+    hc vault(hashicorp vault): secrets management system used to store and tightly control access to tokens,passwords,certificates, api keys, and other secrets in modern computing; similar to aws secrets manager 
+        feature 
+            - api driven 
+
+        usecase
+            - secrets management: centrally store, access and distribute secrets (usernames and apsswords, certificates, ssh keys, api keys, etc.)
+            - microservice secrets: microservice sitting on a kubernetes cluster needs a central place where they can get or retrieve all the security credentials about their applications 
+        terms 
+            unseal key: used to decrypt the data because when you entered the vault the data is still encrypted, bruh; used for authentication; automatically generated; save in a secure place
+            root token: used for logging in; used for authentication; automatically generated; save in a secure place
+            tokens: generated by the auth method; clients need token to interact with the vault 
+            acl policy: what access does the client have, e.g. client can only access this specific secret engine; deny by default meaning empty policy means no access 
+                root: can access any secret within the vault 
+                default: default of this means does not allow user to access anything 
+
+                example 
+                    path "kv/metadata/users"{ // path "{secrets-engine}/{options: metadata/data/delete}/{path-of-kv}" {
+                        capabilities = ["list"] // capabilities = [{what-access-can-this-policy-do: list - show, read, update, create, delete }]
+                    }
+            injector: allows kubernetes pods to automatically get secrets from the vault
+            path: name of the type of secret engine 
+        concepts    
+            server mode
+                dev: not secure and stores everything in memory; automatically unsealed 
+                prod: used in aq and production
+            auth methods: users are grouped into auth method, it specifies how the user could login to the vault 
+                username: specify username and password 
+                token: specify root token 
+                github
+                ldap 
+                ...
+            secrets engine: contains different kinds of secrets 
+                kv: key value pair secrets 
+                pki certificates: certifate secrets 
+                aws: aws credentials 
+                ...
+            deployment: 
+                high available (ha): 
+        diagram
+        flow 
+            end-to-end vault usage 
+                -> installation of hc vault 
+                    kubernetes(thru helm):
+                        -> helm repo add hashicorp https://helm.releases.hashicorp.com
+                        -> helm install [release-name] hashicorp/vault --set='ui.enabled=true' --set='ui.serviceType=LoadBalancer' -- install hs vault from helm charts, this also auto starts the vault cluster; enable ui of the vault
+                        -> kubectl exec -it vault-0 /bin/sh -- enter the interactive shell of the vault to be able to enter the vault commands
+                -> initialization vault server(dev or prod): this is the time where vault provides you with unseal keys and root token(be sure to store these keys/token is secure area) 
+                    dev mode(test mode - auto uninitialized at refresh)
+                        vault server -dev -dev-root-token-id=qwerty -- create vault in dev server mode, assign value to root token as qwerty(if you did not do this the vault will generate one for you)     
+                    prod mode(permanent to computer unless you want to uninitialize it which is very hard) 
+                        vault operator init -key-shares=3 -key-threshold=3 -- create vault in prod server mode, generate 3 keys and must have atleast 3 keys to enter the vault 
+                -> enable audit logging to keep the activity within the vault 
+                    mkdir logs 
+                    vault audit enable file file_path=./logs/vault_audit.log
+                    tail if ./logs/vault_audit.log | jq -- check the logs 
+                -> unseal to be able to see the key-value(kv) in the vault
+                    -> unseal with shamir[RECOMMENDED]: shamir is algo to split key(5 keys) into shard and a certain treshold of shards is required to reconstruct the unseal key which is then used to decrypt the master key 
+                        vault operator unseal 
+                    -> unseal with auto unseal: use cloud or hsm key to reduce the operational complexity of keeping the unseal key secure; it delegates the responsibility of securing the unseal key from users to a trusted device or service  
+                -> interact with vault(login - add secrets with kv secrets engine) 
+                    vault login -- enter root token, only at first installation afterwards you can add auth methods to specify how different users login and note that you can have different users different access to the vault
+                    vault status -- check status of vault
+                    vault secrets enable -version=2 kv -- create kv secrets engine 
+                    vault secrets list -- show all secrets 
+                    vault kv put secret/foo key=thisisthevalue -- creating a kv secret engine secret on path /foo 
+                    vault kv put secret/foo key=thisthevalue key2=thisisanothervalue -- update the secret on path /foo, now it contains 2 key-value pair  
+                    vault kv get secret/foo -- get value of secret on path foo 
+                    vault kv delete secret/foo -- delete all keyvalue pair(secrets) on path /foo 
+                    vault kv undelete -versions=2 secret/foo -- undelete the secret 
+                    vault kv destroy -- delete permanently the secret 
+                -> create policy: attach policy to users to show what certain path(secret) can they access 
+                    vault policy write {policy-name} ./policy-name.hcl 
+                -> create auth method(specifically userpass auth method) and users: how users can login to the vault
+                    vault auth enable userpass -- enable userpass auth method first before you can create users from it 
+                    vault write auth/userpass/users/{username} password={password} policies={policy-name} -- set username and password + policy of the user 
+                        tip: use bash to create 3 users easily 
+                            for i in renz ken anne; do vault write auth/userpass/users/$i password=$i; done 
+                    vault login -method=userpass username={username} -- login with a user 
+                
+                -> [incomplete] perform replication design with dr and pr 
+                -> deploy vault in k8 
+            
+            end-to-end summary(use powershell, this doesn't work on git bash)(used minikube for easy k8 cluster)
+                minikube start
+                helm repo add hashicorp https://helm.releases.hashicorp.com
+                helm install [release-name] hashicorp/vault --set='ui.enabled=true' --set='ui.serviceType=LoadBalancer' -- install hs vault from helm charts, this also auto starts the vault cluster; enable ui of the vault
+                kubectl exec -it vault-0 /bin/sh -- enter the interactive shell of the vault to be able to enter the vault commands
+                vault operator init -- initialize prod server mode vault
+                vault operator unseal -- decrypt secrets to make them viewable, you still need to login tho 
+                vault login -- entry to the vault with root token, you need this to interact with vault 
+    git: version control for code 
+        concepts 
+            branching strategies 
+                trunk based development: single branch (master/mainline); continuous deployment 
+                feature branches: one branch per feature, once feature is done merge to master/mainline; continuous delivery 
+                release branches: one branch per release; no continuous integration 
+                forking strategy: fork repo, once feature is done pull request to original repo; typically what's happening when open sourcing; 
+                git flow 
+                environment branches 
+                custom branching strategy (implemented in dk): https://a-cloud.b-cdn.net/media/iW=1060&iH=463&oX=0&oY=0&cW=1060&cH=463/7dc441bfb0e3cf1dcc3c0c03728da97d.png
+                    feature branch (note, this is not a single branch, each developers got their own feature branch)
+                    master branch: main branch 
+                    release branch: branch where we got the app to release on prod 
+            merging strategies 
+                merge: merge feature branch to master branch 
+                cherry pick: choosing a commit from one branch and applying it to another branch  
+                rebase: shift the continuation of master branch to the last commit on feature branch
+        flow 
+            collaboration (creating pull request)
+                git init 
+                git clone {github-url} // clone the main repo with synchronization 
+                git checkout -b newBranch // create new branch and go to that branch 
+                // make some changes in file 
+                git add . // add to staging area 
+                git commit -m "message" // push to local repo 
+                git pull origin master // fetch and merge the changes from remote repo to your local repo so before you push you get to see whether there will be conflict 
+                git push -u origin newBranch // pushing your newBranch to remote repo 
+                // create a pull request in github to tell the repo owner you wanted to push your changes 
+                // the owner goes to github and accept your pull request, note that pull request and git pull is different 
+    nginx: web server for reverse proxying, caching and load balancing 
+        usecase 
+        concepts 
+            web servers: are computers which deliver the requested web pages; every web server has an ip address and a domain name 
+                - client types fb.com -> web server fetches the page -> sends the response to the client's browser 
+            reverse proxying 
+            caching 
+            load balancing: used for scaling; to handle millions of traffic on your website; distribute the traffic into multiple ser
+        diagram 
+        flow 
+    sonarqube: for code analysis 
+        concepts
+            quality gates 
+
+        diagram 
+        flow 
+    vagrant: infrastructure provisioning but for virtual machine 
+    maven: for dependency management in java; 
+        concepts 
+            pom.xml: project object model; file that allows us to add, remove, manage dependencies and versions in a single file location 
+
+devops lifecycle: general guide only - note that a pipeline differs depending on the app language
+    -> continuous deployment/continuous delivery 
+        -> [automated] continuous integration: implement/execute ci workflow with jenkins 
+            -> push code to repo: this happens at every push to code; trigger for the workflow 
+            -> build with maven 
+                features-branch: features branch doesn't go further into workflow
+                    -> compile 
+                    -> linter [not sure]
+                    -> automated test & unit test 
+                    -> run security scans 
+                masters-branch 
+                    -> compile 
+                    -> linter [not sure]
+                    -> automated test & unit test 
+                    -> run security scans 
+                    -> git squash into one commit 
+                    -> sonarscan with sonarqube for quality assurance 
+                    -> build with maven 
+            -> package 
+                -> upload latest stable version to docker registry
+                -> deploys a stable snapshot release in the dev environment 
+        -> [manual] release: triggered by release manager 
+            -> 
+        -> [automated/manual] deploy steps 
+            -> infrastructure provisioning; use terraform to create infrastructure(where we deploy server, bruh) of the server 
+            -> deploy: this is where the difference between continuous deployment and continuous delviery would show 
+                continuous deployment: automatic release to production 
+                continuous delivery: someone will decide when to release to production
+            -> configuration management; configuring/managing infrastructure with again terraform, but yknow there are other config management tools like ansible 
+    -> continuous monitoring 
+        -> metric data collection with prometheus 
+        -> data visualization with grafana + loki             
+devops lifecycle(aws): watch your udemy course   
+    codepipeline 
+        codecommit 
+        codebuild
+        codedeploy 
+        beanstalk
+devops lifecycle(azure)
+
+devops best practices  
+    - application hosted on an ec2 instance(you manage the app including scaling,etc.) vs managed service like rds, etc. 
+        - rule of thumb is: don't manage services yourself, unless maintenance is cheaper than paying for hosted service 
+        - according to rm_rhz: maintenance is cheap when your application is stateless
+    - [not sure] terraform vs ansible? terraform for heavy cloud infrastructure provisioning/configuration management, ansible for heavy on-prem infrastructure provisioining/configuration management 
+    - application code and k8 app configuration(all yaml files for your k8) should be in a different repo is a best practice 
+gitops: apply devops practices such as ci/cd and apply them to infrastructure automation; infrastructure as code done right; treat iac the same as application code 
+    principles 
+        - everything is described as code 
+        - git is the only source of truth
+chatops: use of chat client like discord or mattermost to facilitate how software development and operation tasks are communicated and executed
+
+
+
+
